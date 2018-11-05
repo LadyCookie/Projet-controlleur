@@ -1,5 +1,6 @@
 nucleo_base_cube_mx/Drivers/
 nucleo_base_cube_mx/MDK-ARM/
+nucleo_base_cube_mx/MDK-ARM/nucleo_base_cube_mx/
 # Created by https://www.gitignore.io/api/keil,windows
 
 ### Keil ###
