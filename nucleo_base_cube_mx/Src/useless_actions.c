@@ -3,8 +3,6 @@
 
 typedef void (*FuncPtr)();
 
-void test() {}
-
 static int action_table_ind = 0;
 static FuncPtr action_table[ACTION_TABLE_SIZE];
 
