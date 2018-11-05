@@ -39,6 +39,7 @@
 #include "main.h"
 #include "stm32f1xx_hal.h"
 #include "gpio.h"
+#include "servomoteur.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -60,14 +61,19 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+	//timer configuration
+	TIM_HandleTypeDef timerArm;
+	TIM_OC_InitTypeDef timerArmOC;
+	
+	
+	
 /* USER CODE END 0 */
 
 int main(void)
-{
+	{
 
   /* USER CODE BEGIN 1 */
-
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -87,12 +93,47 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+/* USER CODE BEGIN 2 */
   MX_GPIO_Init();
-
-  /* USER CODE BEGIN 2 */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	
+	
+	//Initizalization of the button pin
+	GPIO_InitTypeDef button;
+	button.Pin=GPIO_PIN_5;
+	button.Speed=0x2; //frequency 20ms
+	button.Mode=GPIO_MODE_INPUT;
+	
+	HAL_GPIO_Init(GPIOB,&button);
+	
+	//initialization PWM for arm
+	GPIO_InitTypeDef PinA1;
+	PinA1.Pin=GPIO_PIN_1;
+	PinA1.Speed=0x2;
+	PinA1.Mode=GPIO_MODE_AF_PP;
+	
+	HAL_GPIO_Init(GPIOA,&PinA1);
+	
+	timerArm.Instance=TIM2;
+	//CALCUL FREQUENCE
+	timerArm.Init.Prescaler =99;
+	timerArm.Init.Period = 14399;
+	
+	timerArmOC.OCMode=TIM_OCMODE_PWM1;
+	timerArmOC.Pulse = 0x0160;
+	
+	//Initialazing
+	HAL_TIM_PWM_MspInit(&timerArm);
+	__HAL_RCC_TIM2_CLK_ENABLE();
+	
+	HAL_TIM_PWM_Init(&timerArm);
+	HAL_TIM_PWM_ConfigChannel(&timerArm,&timerArmOC,TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&timerArm,TIM_CHANNEL_2);
+	
 
   /* USER CODE END 2 */
-
+	
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -100,7 +141,14 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
+		if (HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_5)){
+			//random function choice and execution
+			//button put down
+			set_angle(100.0,&timerArm,TIM_CHANNEL_2);
+		}
+		else{
+			set_angle(0.0,&timerArm,TIM_CHANNEL_2);
+		}
   }
   /* USER CODE END 3 */
 
