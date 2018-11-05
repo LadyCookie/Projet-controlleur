@@ -1,6 +1,8 @@
 #ifndef USELESSACTIONS_H_
 #define USELESSACTIONS_H_
 
+#include "stdint.h"
+
 #define ACTION_TABLE_SIZE 100
 
 typedef void (*FuncPtr)();
