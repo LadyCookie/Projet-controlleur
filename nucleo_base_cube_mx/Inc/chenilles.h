@@ -5,4 +5,7 @@
 
 void Init_track(void);
 void Set_power(float percent);
+void Avancer(void);
+void Reculer(void);
+
 #endif
