@@ -65,7 +65,13 @@ void SystemClock_Config(void);
 	TIM_HandleTypeDef timerArm;
 	TIM_OC_InitTypeDef timerArmOC;
 	
+	TIM_HandleTypeDef timerLid;
+	TIM_OC_InitTypeDef timerLidOC;
+	int max_arm=2000; //1472   pour le bras
+  int min_arm=450; //352   pour le bras
 	
+	int max_lid=1400;
+	int min_lid=900;
 	
 /* USER CODE END 0 */
 
@@ -118,19 +124,38 @@ int main(void)
 	timerArm.Instance=TIM2;
 	//CALCUL FREQUENCE
 	timerArm.Init.Prescaler =99;
-	timerArm.Init.Period = 14399;
+	timerArm.Init.Period = 17999; //pour 50Hz ie 20ms mettre 14399
 	
 	timerArmOC.OCMode=TIM_OCMODE_PWM1;
-	timerArmOC.Pulse = 0x0160;
+	timerArmOC.Pulse = min_arm;
+	
+	//initialization PWM for lid
+	GPIO_InitTypeDef PinA0;
+	PinA0.Pin=GPIO_PIN_0;
+	PinA0.Speed=0x2;
+	PinA0.Mode=GPIO_MODE_AF_PP;
+	
+	HAL_GPIO_Init(GPIOA,&PinA0);
+	
+	timerLid.Instance=TIM2;
+	//CALCUL FREQUENCE
+	timerLid.Init.Prescaler =99;
+	timerLid.Init.Period = 17999; //pour 50Hz ie 20ms mettre 14399
+	
+	timerLidOC.OCMode=TIM_OCMODE_PWM1;
+	timerLidOC.Pulse = min_lid;
+	
 	
 	//Initialazing
 	HAL_TIM_PWM_MspInit(&timerArm);
+	HAL_TIM_PWM_MspInit(&timerLid);
 	__HAL_RCC_TIM2_CLK_ENABLE();
 	
 	HAL_TIM_PWM_Init(&timerArm);
 	HAL_TIM_PWM_ConfigChannel(&timerArm,&timerArmOC,TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&timerArm,TIM_CHANNEL_2);
 	
+
 	//SPI
 	
 	static SPI_HandleTypeDef spi = { .Instance = SPI1 };
@@ -157,6 +182,11 @@ int main(void)
 
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);	
 
+	HAL_TIM_PWM_Init(&timerLid);
+	HAL_TIM_PWM_ConfigChannel(&timerLid,&timerLidOC,TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&timerLid,TIM_CHANNEL_1);
+
+
   /* USER CODE END 2 */
 	
   /* Infinite loop */
@@ -169,10 +199,12 @@ int main(void)
 		if (HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_5)){
 			//random function choice and execution
 			//button put down
-			set_angle(100.0,&timerArm,TIM_CHANNEL_2);
+			set_angle(100.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
+			set_angle(100.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
 		}
 		else{
-			set_angle(0.0,&timerArm,TIM_CHANNEL_2);
+			set_angle(0.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
+			set_angle(0.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
 		}
   }
   /* USER CODE END 3 */
