@@ -191,6 +191,7 @@ int main(void)
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 	//SPI
+	__HAL_RCC_SPI1_CLK_ENABLE();
 	
 	static SPI_HandleTypeDef spi = { .Instance = SPI1 };
   spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
@@ -198,7 +199,7 @@ int main(void)
   spi.Init.CLKPhase = SPI_PHASE_2EDGE;
   spi.Init.CLKPolarity = SPI_POLARITY_HIGH;
   spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-  spi.Init.DataSize = SPI_DATASIZE_16BIT;
+  spi.Init.DataSize = SPI_DATASIZE_8BIT;
   spi.Init.FirstBit = SPI_FIRSTBIT_LSB;
   spi.Init.NSS = SPI_NSS_SOFT;
   spi.Init.TIMode = SPI_TIMODE_DISABLED;
@@ -207,14 +208,29 @@ int main(void)
   {
 		//TODO fail
   }
-	GPIO_InitTypeDef  GPIO_InitStruct;
+	
+	//Init GPIO SPI
+	GPIO_InitTypeDef  GPIO_SPIInitStruct;
   
-  GPIO_InitStruct.Pin       = GPIO_PIN_5 | GPIO_PIN_6;
-  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull      = GPIO_PULLUP;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+  GPIO_SPIInitStruct.Pin       = GPIO_PIN_5 | GPIO_PIN_6;
+  GPIO_SPIInitStruct.Mode      = GPIO_MODE_AF_PP;
+  GPIO_SPIInitStruct.Pull      = GPIO_PULLUP;
+  GPIO_SPIInitStruct.Speed     = GPIO_SPEED_LOW;
 
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);	
+  HAL_GPIO_Init(GPIOA, &GPIO_SPIInitStruct);
+
+	GPIO_InitTypeDef  GPIO_CSInitStruct;
+  
+  GPIO_CSInitStruct.Pin       = GPIO_PIN_4;
+  GPIO_CSInitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
+  GPIO_CSInitStruct.Pull      = GPIO_PULLUP;
+  GPIO_CSInitStruct.Speed     = GPIO_SPEED_LOW;
+
+  HAL_GPIO_Init(GPIOA, &GPIO_CSInitStruct);
+	
+	uint8_t testbuff = 0xF0;
+	
+	//Init GPIO CL screen
 
 	HAL_TIM_PWM_Init(&timerLid);
 	HAL_TIM_PWM_ConfigChannel(&timerLid,&timerLidOC,TIM_CHANNEL_1);
@@ -231,7 +247,23 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+<<<<<<< HEAD
 		
+=======
+		if (HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_5)){
+			//random function choice and execution
+			//button put down
+			set_angle(100.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
+			set_angle(100.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+			HAL_SPI_Transmit(&spi, &testbuff, 1, 0xFFFF);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+		}
+		else{
+			set_angle(0.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
+			set_angle(0.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
+		}
+>>>>>>> Fix SPI config
   }
   /* USER CODE END 3 */
 
