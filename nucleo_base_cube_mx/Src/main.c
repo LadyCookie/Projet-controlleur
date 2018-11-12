@@ -131,6 +131,31 @@ int main(void)
 	HAL_TIM_PWM_ConfigChannel(&timerArm,&timerArmOC,TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&timerArm,TIM_CHANNEL_2);
 	
+	//SPI
+	
+	static SPI_HandleTypeDef spi = { .Instance = SPI1 };
+  spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  spi.Init.Direction = SPI_DIRECTION_1LINE;
+  spi.Init.CLKPhase = SPI_PHASE_2EDGE;
+  spi.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  spi.Init.DataSize = SPI_DATASIZE_16BIT;
+  spi.Init.FirstBit = SPI_FIRSTBIT_LSB;
+  spi.Init.NSS = SPI_NSS_SOFT;
+  spi.Init.TIMode = SPI_TIMODE_DISABLED;
+  spi.Init.Mode = SPI_MODE_MASTER; 
+  if (HAL_SPI_Init(&spi) != HAL_OK)
+  {
+		//TODO fail
+  }
+	GPIO_InitTypeDef  GPIO_InitStruct;
+  
+  GPIO_InitStruct.Pin       = GPIO_PIN_5 | GPIO_PIN_6;
+  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull      = GPIO_PULLUP;
+  GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);	
 
   /* USER CODE END 2 */
 	
