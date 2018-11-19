@@ -69,10 +69,17 @@ void SystemClock_Config(void);
 	void nothing(){};
 	
 
-	//handler configuration
-	void HAL_TIM_PeriodElaspedCallback(TIM_HandleTypeDef *htim) {
-		handlerbutton();
-	}
+	//handler configuration for button interruption
+	void EXTI9_5_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+	handlerbutton();
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+
+  /* USER CODE END EXTI15_10_IRQn 1 */
+}
 
 	//timer configuration
 	TIM_HandleTypeDef timerArm;
@@ -81,10 +88,9 @@ void SystemClock_Config(void);
 	TIM_HandleTypeDef timerLid;
 	TIM_OC_InitTypeDef timerLidOC;
 	
-	TIM_HandleTypeDef timerbutton;
 	
-	int max_arm=2000; //1472   pour le bras
-  int min_arm=450; //352   pour le bras
+	int max_arm=2450; //1472   pour le bras
+  int min_arm=450;//450; //352   pour le bras
 	int max_lid=1400;
 	int min_lid=900;
 	
@@ -173,20 +179,16 @@ int main(void)
 	HAL_TIM_PWM_Start(&timerArm,TIM_CHANNEL_2);
 	
 	
-	//Initializing & activating TIM3 for button interruption
-	timerbutton.Instance = TIM3;
-	timerbutton.Init.Prescaler = 3599;
-	timerbutton.Init.Period = 9999;
-		
-	HAL_TIM_Base_MspInit(&timerbutton);
-	__HAL_RCC_TIM3_CLK_ENABLE();
-	HAL_TIM_Base_Init(&timerbutton);
-	HAL_TIM_Base_Start(&timerbutton);
+	//Initializing interruption for button interruption
+	GPIO_InitTypeDef GPIO_buttonStruct;
 	
-	HAL_NVIC_SetPriority(29,10,10);
-	HAL_NVIC_EnableIRQ(29);
-
-	HAL_TIM_Base_Start_IT(&timerbutton);
+	GPIO_buttonStruct.Pin = GPIO_PIN_5;
+  GPIO_buttonStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_buttonStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_buttonStruct);
+	
+	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 	//SPI
 	
