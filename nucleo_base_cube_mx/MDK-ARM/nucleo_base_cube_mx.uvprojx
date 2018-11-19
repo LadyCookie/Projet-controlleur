@@ -411,6 +411,16 @@
               <FileType>1</FileType>
               <FilePath>..\Src\servomoteur.c</FilePath>
             </File>
+            <File>
+              <FileName>handlerbutton.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\handlerbutton.c</FilePath>
+            </File>
+            <File>
+              <FileName>useless_actions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\useless_actions.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1062,6 +1072,16 @@
               <FileName>servomoteur.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Src\servomoteur.c</FilePath>
+            </File>
+            <File>
+              <FileName>handlerbutton.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\handlerbutton.c</FilePath>
+            </File>
+            <File>
+              <FileName>useless_actions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\useless_actions.c</FilePath>
             </File>
           </Files>
         </Group>

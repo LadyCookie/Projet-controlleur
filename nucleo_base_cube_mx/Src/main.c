@@ -40,6 +40,8 @@
 #include "stm32f1xx_hal.h"
 #include "gpio.h"
 #include "servomoteur.h"
+#include "handlerbutton.h"
+#include "useless_actions.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -61,15 +63,28 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+
+	//Random action register
+	void nothing(){};
+	
+
+	//handler configuration
+	void HAL_TIM_PeriodElaspedCallback(TIM_HandleTypeDef *htim) {
+		handlerbutton();
+	}
+
 	//timer configuration
 	TIM_HandleTypeDef timerArm;
 	TIM_OC_InitTypeDef timerArmOC;
 	
 	TIM_HandleTypeDef timerLid;
 	TIM_OC_InitTypeDef timerLidOC;
+	
+	TIM_HandleTypeDef timerbutton;
+	
 	int max_arm=2000; //1472   pour le bras
   int min_arm=450; //352   pour le bras
-	
 	int max_lid=1400;
 	int min_lid=900;
 	
@@ -80,6 +95,8 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	
+	Register_Action(&nothing,1);
+		
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -146,7 +163,7 @@ int main(void)
 	timerLidOC.Pulse = min_lid;
 	
 	
-	//Initialazing
+	//Initializing
 	HAL_TIM_PWM_MspInit(&timerArm);
 	HAL_TIM_PWM_MspInit(&timerLid);
 	__HAL_RCC_TIM2_CLK_ENABLE();
@@ -155,6 +172,21 @@ int main(void)
 	HAL_TIM_PWM_ConfigChannel(&timerArm,&timerArmOC,TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&timerArm,TIM_CHANNEL_2);
 	
+	
+	//Initializing & activating TIM3 for button interruption
+	timerbutton.Instance = TIM3;
+	timerbutton.Init.Prescaler = 3599;
+	timerbutton.Init.Period = 9999;
+		
+	HAL_TIM_Base_MspInit(&timerbutton);
+	__HAL_RCC_TIM3_CLK_ENABLE();
+	HAL_TIM_Base_Init(&timerbutton);
+	HAL_TIM_Base_Start(&timerbutton);
+	
+	HAL_NVIC_SetPriority(29,10,10);
+	HAL_NVIC_EnableIRQ(29);
+
+	HAL_TIM_Base_Start_IT(&timerbutton);
 
 	//SPI
 	
@@ -186,6 +218,7 @@ int main(void)
 	HAL_TIM_PWM_ConfigChannel(&timerLid,&timerLidOC,TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&timerLid,TIM_CHANNEL_1);
 
+	/*Initialisation timer 3 pour interruption bouton*/
 
   /* USER CODE END 2 */
 	
@@ -196,16 +229,7 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		if (HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_5)){
-			//random function choice and execution
-			//button put down
-			set_angle(100.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
-			set_angle(100.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
-		}
-		else{
-			set_angle(0.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
-			set_angle(0.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
-		}
+		
   }
   /* USER CODE END 3 */
 
