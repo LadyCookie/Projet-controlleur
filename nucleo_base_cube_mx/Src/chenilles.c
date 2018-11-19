@@ -3,6 +3,10 @@
 #include "stm32f1xx_hal.h"
 #include "gpio.h"
 
+#define STEP 10.0
+#define NB_SEUIL_HAUT 7
+#define SEUIL_HAUT 70.0
+
 TIM_HandleTypeDef htim4;
 
 int nb=25;
@@ -12,8 +16,8 @@ int sens=-1;
 - Horologe utilisé : TIM4
 - Channel utilisé : 
 	- Avancer
-		- CC1 (PB6) 
-		- CC2 (PB7)
+		- CC1 (PB6) IA 1
+		- CC2 (PB7)	IB 2
 	
 	- Reculer 
 		- CC3 (PB8)
@@ -37,14 +41,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		return;
 	}
 	nb+=1;
-	if (nb<=5){
-		Set_power(10.0*(float)nb);
+	if (nb<=NB_SEUIL_HAUT){
+		Set_power(STEP*(float)nb);
 	}else{
-		if (nb<=15){
-			Set_power(50.0);
+		if (nb<=(NB_SEUIL_HAUT*3)){
+			Set_power(SEUIL_HAUT);
 		}else{
-			if (nb<=20){
-				Set_power(10.0*(float)(20-nb));
+			if (nb<=(NB_SEUIL_HAUT*4)){
+				Set_power(STEP*(float)((NB_SEUIL_HAUT*4)-nb));
 			}else{
 				sens=-1;
 				Set_power(0.0);
@@ -80,39 +84,34 @@ void Init_track(){
 	GPIO_InitStruct.Pin = GPIO_PIN_7;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 	
-	/** PB8 **/
-	GPIO_InitStruct.Pin = GPIO_PIN_8;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
+	
 	/** PB9 **/
 	GPIO_InitStruct.Pin = GPIO_PIN_9;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 	
+	/** PB8 **/
+	GPIO_InitStruct.Pin = GPIO_PIN_8;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 	
 	TIM_OC_InitTypeDef init_pwm;
 	init_pwm.OCMode = TIM_OCMODE_PWM1;
 	init_pwm.Pulse = 0;
-	
+	init_pwm.OCFastMode=TIM_OCFAST_DISABLE;
+	init_pwm.OCPolarity=TIM_OCPOLARITY_HIGH;
 	HAL_TIM_PWM_ConfigChannel(&htim4, &init_pwm, TIM_CHANNEL_1);
 	HAL_TIM_PWM_ConfigChannel(&htim4, &init_pwm, TIM_CHANNEL_2);
 	HAL_TIM_PWM_ConfigChannel(&htim4, &init_pwm, TIM_CHANNEL_3);
 	HAL_TIM_PWM_ConfigChannel(&htim4, &init_pwm, TIM_CHANNEL_4);
-
-	// Activation of the TIM peripheral
+	
+		// Activation of the TIM peripheral
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
-
-	// Activation de l'interruption au niveau du timer (p516)
-	/*HAL_TIM_PWM_Start_IT(&htim4, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(&htim4, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start_IT(&htim4, TIM_CHANNEL_3);
-	HAL_TIM_PWM_Start_IT(&htim4, TIM_CHANNEL_4);*/
 }
 
 void Set_power(float percent){
-
 	if (sens == 0){
 		/** Avancer **/
 		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_1,percent*100);
@@ -127,7 +126,6 @@ void Set_power(float percent){
 			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_1,0);
 			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_2,0);
 
-			
 			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_3,percent*100);
 			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,percent*100);
 		}else{
@@ -137,6 +135,5 @@ void Set_power(float percent){
 			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,0);
 		}
 	}
-	// Activation of the TIM peripheral
-	HAL_TIM_Base_Start(&htim4);
+	// Activation of the TIM peripheralHAL_TIM_Base_Start(&htim4);
 }
