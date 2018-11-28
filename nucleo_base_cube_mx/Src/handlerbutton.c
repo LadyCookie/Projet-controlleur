@@ -22,7 +22,7 @@ void close_box(){
 
 void handlerbutton(){	
 			//random function choice & execution
-			(Get_Random_Action())();
+			//(Get_Random_Action())();
 			
 			//button put down
 			close_box();

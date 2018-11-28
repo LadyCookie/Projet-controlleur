@@ -64,9 +64,6 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 
-
-	//Random action register
-	void nothing(){};
 	
 
 	//handler configuration for button interruption
@@ -89,19 +86,40 @@ void SystemClock_Config(void);
 	TIM_OC_InitTypeDef timerLidOC;
 	
 	
-	int max_arm=2450; //1472   pour le bras
+	int max_arm=2650; //1472   pour le bras
   int min_arm=450;//450; //352   pour le bras
 	int max_lid=1400;
 	int min_lid=900;
 	
+
+	void nothing(){};
+
+	void clapoter(){
+		for(int i=0; i<10; i++){
+			set_angle(100.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
+			while(timerArmOC.Pulse /= max_arm){}
+			set_angle(0.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
+			while(timerArmOC.Pulse /= min_arm){}
+		}
+	}
+
+		void feinte(){
+			set_angle(80.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
+			set_angle(0.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
+		}
+			
+
+		
 /* USER CODE END 0 */
 
 int main(void)
 	{
 
   /* USER CODE BEGIN 1 */
+	//Register_Action(&nothing,1);
+		Register_Action(&clapoter,1);
+	//	Register_Action(&feinte,1);
 	
-	Register_Action(&nothing,1);
 		
   /* USER CODE END 1 */
 
@@ -245,24 +263,10 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-			HAL_SPI_Transmit(&spi, (uint8_t *)&testbuff, 1, 0xFFFF);
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-  /* USER CODE BEGIN 3 */
-		if (HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_5)){
-
-			//random function choice and execution
-			//button put down
-			set_angle(100.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
-			set_angle(100.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
-		}
-		else{
-			set_angle(0.0,&timerArm,TIM_CHANNEL_2, min_arm, max_arm);
-			set_angle(0.0,&timerLid,TIM_CHANNEL_1, min_lid, max_lid);
-		}
-  }
-  /* USER CODE END 3 */
-
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&spi, (uint8_t *)&testbuff, 1, 0xFFFF);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+	}
 }
 
 /** System Clock Configuration
@@ -328,6 +332,7 @@ void _Error_Handler(char * file, int line)
   /* User can add his own implementation to report the HAL error return state */
   while(1) 
   {
+		
   }
   /* USER CODE END Error_Handler_Debug */ 
 }
